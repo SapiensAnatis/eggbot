@@ -49,7 +49,7 @@ class AttachmentData(commands.Converter):
     
     @staticmethod
     def get_valid_attachment(attachments):
-        for a in ctx.message.attachments:
+        for a in attachments:
             for e in utils.image_extensions:
                 if a.endswith(f".{e}"):
                     return a
