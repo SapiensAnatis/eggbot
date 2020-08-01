@@ -4,8 +4,6 @@ import aiohttp
 import utils
 from discord.ext import commands
 
-supported_img_extensions
-
 class ImageURLData(commands.Converter):
     async def convert(self, ctx, argument):
         if utils.is_url(argument):
