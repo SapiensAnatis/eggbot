@@ -16,6 +16,7 @@ It has a single command (excluding `$reload` and `$help`):
 - egg
 - torus
 - monkey
+- pyramid
 
 The bot will use some logic in trying to read the second argument `image_data`:
 
