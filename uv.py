@@ -111,8 +111,8 @@ class UVCog(commands.Cog):
             await ctx.send(self.no_valid_shape_err)
             return
         
-        # Increment job ID
-        self.job_id += 1
+        # Set job ID to requester id
+        self.job_id = ctx.message.author.id
         
         # Would love to do async file I/O just for overkill purposes but that's more trouble
         # than it's worth, even for showoff points
