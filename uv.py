@@ -38,32 +38,31 @@ class EmojiImageData(commands.PartialEmojiConverter):
 
 class AttachmentData(commands.Converter):
     async def convert(self, ctx, argument):
-        print(ctx.message.attachments)
-        if len(ctx.message.attachments) > 0:
-            print("Message had an attachment")
-            # Select only the first attachment with an image extension
-            # The bot could probably be adapted to do multiple renders,
-            # but I don't want one user clogging up the entire queue. 
-            
-            # Maybe a maximum of 3 to 5? It's something to look into
+        if argument == "attachment" or argument == "embed":
+            if len(ctx.message.attachments) > 0:
+                # Select only the first attachment with an image extension
+                # The bot could probably be adapted to do multiple renders,
+                # but I don't want one user clogging up the entire queue. 
+                
+                # Maybe a maximum of 3 to 5? It's something to look into
 
-            attachment = self.get_valid_attachment(ctx.message.attachments)
-            print(attachment)
+                attachment = self.get_valid_attachment(ctx.message.attachments)
+                print(attachment)
 
-            if attachment is None:
-                raise discord.ext.commands.BadArgument() # no attachments w/ correct type
+                if attachment is None:
+                    raise discord.ext.commands.BadArgument() # no attachments w/ correct type
 
-            img_data = await attachment.read()
-            return img_data
+                img_data = await attachment.read()
+                return img_data
+            else:
+                raise discord.ext.commands.BadArgument()
         else:
             raise discord.ext.commands.BadArgument()
     
     @staticmethod
     def get_valid_attachment(attachments):
         for a in attachments:
-            print(a.url)
             for e in utils.image_extensions:
-                print(e)
                 if a.url.endswith(f".{e}"):
                     return a
         
