@@ -4,6 +4,7 @@ import aiohttp
 import utils
 import os
 import shutil
+import asyncio
 from discord.ext import commands
 
 
@@ -16,7 +17,7 @@ class ImageURLData(commands.Converter):
             async with aiohttp.ClientSession() as session:
                 async with session.get(argument) as response:
                     if response.status == 200:
-                        img_data = response.read()
+                        img_data = await response.read()
                         return img_data
         else:
             raise discord.ext.commands.BadArgument()
@@ -24,7 +25,6 @@ class ImageURLData(commands.Converter):
 class UserAvatarData(commands.UserConverter):
     async def convert(self, ctx, argument):
         user = await super().convert(ctx, argument)
-        utils.log(f"Grabbing texture data of user {user.name}...")
         asset = user.avatar_url_as(format="png")
         img_data = await asset.read()
         return img_data
@@ -38,7 +38,9 @@ class EmojiImageData(commands.PartialEmojiConverter):
 
 class AttachmentData(commands.Converter):
     async def convert(self, ctx, argument):
+        print(ctx.message.attachments)
         if len(ctx.message.attachments) > 0:
+            print("Message had an attachment")
             # Select only the first attachment with an image extension
             # The bot could probably be adapted to do multiple renders,
             # but I don't want one user clogging up the entire queue. 
@@ -46,6 +48,8 @@ class AttachmentData(commands.Converter):
             # Maybe a maximum of 3 to 5? It's something to look into
 
             attachment = self.get_valid_attachment(ctx.message.attachments)
+            print(attachment)
+
             if attachment is None:
                 raise discord.ext.commands.BadArgument() # no attachments w/ correct type
 
@@ -57,8 +61,10 @@ class AttachmentData(commands.Converter):
     @staticmethod
     def get_valid_attachment(attachments):
         for a in attachments:
+            print(a.url)
             for e in utils.image_extensions:
-                if a.endswith(f".{e}"):
+                print(e)
+                if a.url.endswith(f".{e}"):
                     return a
         
         # if loop terminated without a return, give None for error handling
@@ -73,7 +79,7 @@ class UVCog(commands.Cog):
         self.job_id = 0
         # Get valid shapes list
         self.blend_files_dir = os.path.join(utils.get_bot_dir(), "models")
-        blend_files = os.listdir(self.blend_files_dir)
+        blend_files = [f for f in os.listdir(self.blend_files_dir) if f.endswith(".blend")]
         self.shapes = [f[:-6] for f in blend_files]
         
         # Canned error messages that I didn't want to repeat
@@ -124,11 +130,21 @@ class UVCog(commands.Cog):
         # Generate script to apply texture
         with open(f"job{self.job_id}_script.py", "w") as f:
             f.write(
-                f"import bpy\nbpy.data.images[\"texture\"].filepath = \"//job{self.job_id}_texture.image\""
+f"""import bpy
+bpy.data.images[\"texture\"].filepath = "//job{self.job_id}_texture.image"
+bpy.ops.wm.save_as_mainfile(filepath="job{self.job_id}_model.blend")"""
             )
         
         # Render
-        
+        proc = await asyncio.create_subprocess_shell(
+                f"blender -b job{self.job_id}_model.blend -P job{self.job_id}_script.py -o //f#_job{self.job_id}_result.png -f 1 ",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+        )
+
+        await proc.communicate()
+        utils.log(f'Render of job {self.job_id} completed.')
+        await ctx.send(f"{ctx.message.author.mention}", file=discord.File(f"f1_job{self.job_id}_result.png"))
 
 
 
@@ -140,9 +156,11 @@ class UVCog(commands.Cog):
             if error.param.name == "tex_data":
                 await ctx.send(self.no_img_data_err)
                            
-        if isinstance(error, commands.BadUnionArgument):
+        elif isinstance(error, commands.BadUnionArgument):
             await ctx.send(self.no_img_data_err)
         
+        else:
+            print(error)
 
 def setup(bot):
     bot.add_cog(UVCog(bot))
