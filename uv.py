@@ -76,7 +76,15 @@ class UVCog(commands.Cog):
         self.bot = bot
         # Reset job ID as zero
         self.job_id = 0
+        # Clear directory
+        utils.log("Purging non-essential files...")
+        non_core_file_ends = ["_model.blend", "_model.blend1", "_texture.image", "_script.py", "_result.png"]
+        for f in os.listdir(utils.get_bot_dir()):
             for e in non_core_file_ends:
+                if f.endswith(e):
+                    print("\tRemoving:", f)
+                    os.remove(f)
+            
         # Get valid shapes list
         self.blend_files_dir = os.path.join(utils.get_bot_dir(), "models")
         blend_files = [f for f in os.listdir(self.blend_files_dir) if f.endswith(".blend")]
