@@ -1,5 +1,6 @@
 import inspect
 import re
+import os
 from datetime import datetime
 
 image_extensions = ["png", "jpg"]
@@ -11,13 +12,13 @@ for e in image_extensions:
     _pattern += rf"{e}|"
 
 # replace the last | with the closing bracket
-_pattern = _pattern[:-1] + ")"
+_pattern = _pattern[:-1] + "))"
 
 _url_regex = re.compile(_pattern)
 
 def log(message: str) -> None:
     frame = inspect.stack()[1]
-    filename = frame.filenamepython
+    filename = os.path.basename(frame.filename)
 
     now = datetime.now()
     time_str = now.strftime("%H:%M:%S")
@@ -28,3 +29,6 @@ def is_url(url: str) -> bool:
     # No need to return the actual match; since it will be the entire string provided
     # A simple test will suffice
     return (_url_regex.match(url) is not None)
+
+def get_bot_dir():
+    return os.path.dirname(os.path.realpath(__file__))
