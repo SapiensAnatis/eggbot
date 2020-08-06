@@ -76,6 +76,7 @@ class UVCog(commands.Cog):
         self.bot = bot
         # Reset job ID as zero
         self.job_id = 0
+            for e in non_core_file_ends:
         # Get valid shapes list
         self.blend_files_dir = os.path.join(utils.get_bot_dir(), "models")
         blend_files = [f for f in os.listdir(self.blend_files_dir) if f.endswith(".blend")]
