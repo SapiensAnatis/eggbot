@@ -38,7 +38,7 @@ class EmojiImageData(commands.PartialEmojiConverter):
 
 class AttachmentData(commands.Converter):
     async def convert(self, ctx, argument):
-        if argument == "attachment" or argument == "embed":
+        if argument == "attachment" or argument == "a":
             if len(ctx.message.attachments) > 0:
                 # Select only the first attachment with an image extension
                 # The bot could probably be adapted to do multiple renders,
@@ -47,7 +47,6 @@ class AttachmentData(commands.Converter):
                 # Maybe a maximum of 3 to 5? It's something to look into
 
                 attachment = self.get_valid_attachment(ctx.message.attachments)
-                print(attachment)
 
                 if attachment is None:
                     raise discord.ext.commands.BadArgument() # no attachments w/ correct type
