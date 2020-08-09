@@ -113,6 +113,8 @@ class UVCog(commands.Cog):
             - shape: any of {self.shapes}
             - tex_data: can be a URL, user mention/ID, emoji or image attachment ({utils.image_extensions})
         """
+        # Lowercase the shape name to make it case insensitive
+        shape = shape.lower()
         # Check that shape is valid
         if not (shape in self.shapes):
             await ctx.send(self.no_valid_shape_err)
@@ -151,7 +153,12 @@ bpy.ops.wm.save_as_mainfile(filepath="job{self.job_id}_model.blend")"""
 
         await proc.communicate()
         utils.log(f'Render of job {self.job_id} completed.')
-        await ctx.send(f"{ctx.message.author.mention}", file=discord.File(f"f1_job{self.job_id}_result.png"))
+        message = f"{ctx.message.author.mention}"
+
+        if shape == "jay":
+            message += " (model by arshlevon / https://arshlevon.cgsociety.org/)"
+
+        await ctx.send(message, file=discord.File(f"f1_job{self.job_id}_result.png"))
 
 
 
